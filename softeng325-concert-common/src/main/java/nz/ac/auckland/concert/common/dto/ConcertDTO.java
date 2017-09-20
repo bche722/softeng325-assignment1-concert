@@ -113,10 +113,4 @@ public class ConcertDTO {
 	            append(_performerIds).
 	            hashCode();
 	}
-	
-	@Override
-	public String toString() {
-		return this.getClass().getName()+_id+_title;
-		
-	}
 }

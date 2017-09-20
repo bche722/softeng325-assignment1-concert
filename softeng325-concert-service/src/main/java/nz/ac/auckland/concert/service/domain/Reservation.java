@@ -4,6 +4,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
@@ -13,24 +18,12 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-/**
- * DTO class to represent reservations. 
- * 
- * A ReservationDTO describes a reservation in terms of:
- * _id                 the unique identifier for a reservation.
- * _reservationRequest details of the corresponding reservation request, 
- *                     including the number of seats and their type, concert
- *                     identity, and the date/time of the concert for which a 
- *                     reservation was requested.
- * _seats              the seats that have been reserved (represented as a Set
- *                     of SeatDTO objects).
- *
- */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name="Resevation")
-public class ReservationDTO {
+@Entity
+@Table(name="RESERVATION")
+public class Reservation {
 	
-	@XmlElement(name="Id")
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long _id;
 	
 	@XmlElement(name="request")
@@ -38,14 +31,14 @@ public class ReservationDTO {
 	
 	@XmlElementWrapper(name="seats")
 	@XmlElement(name="seat")
-	private Set<SeatDTO> _seats;
+	private Set<Seat> _seats;
 	
-	public ReservationDTO() {}
+	public Reservation() {}
 	
-	public ReservationDTO(Long id, ReservationRequestDTO request, Set<SeatDTO> seats) {
+	public Reservation(Long id, ReservationRequestDTO request, Set<Seat> seats) {
 		_id = id;
 		_request = request;
-		_seats = new HashSet<SeatDTO>(seats);
+		_seats = new HashSet<Seat>(seats);
 	}
 	
 	public Long getId() {
@@ -56,18 +49,18 @@ public class ReservationDTO {
 		return _request;
 	}
 	
-	public Set<SeatDTO> getSeats() {
+	public Set<Seat> getSeats() {
 		return Collections.unmodifiableSet(_seats);
 	}
 	
 	@Override
 	public boolean equals(Object obj) {
-		if (!(obj instanceof ReservationDTO))
+		if (!(obj instanceof Reservation))
             return false;
         if (obj == this)
             return true;
 
-        ReservationDTO rhs = (ReservationDTO) obj;
+        Reservation rhs = (Reservation) obj;
         return new EqualsBuilder().
             append(_request, rhs._request).
             append(_seats, rhs._seats).

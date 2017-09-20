@@ -11,17 +11,10 @@ import javax.xml.bind.annotation.XmlRootElement;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-/**
- * DTO class to represent seats at the concert venue. 
- * 
- * A SeatDTO describes a seat in terms of:
- * _row    the row of the seat.
- * _number the number of the seat.
- *
- */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name="Seat")
-public class SeatDTO {
+
+
+@Embeddable
+public class Seat {
 	
 	@XmlElement(name="row")
 	private SeatRow _row;
@@ -29,9 +22,9 @@ public class SeatDTO {
 	@XmlElement(name="number")
 	private SeatNumber _number;
 	
-	public SeatDTO() {}
+	public Seat() {}
 	
-	public SeatDTO(SeatRow row, SeatNumber number) {
+	public Seat(SeatRow row, SeatNumber number) {
 		_row = row;
 		_number = number;
 	}
@@ -46,12 +39,12 @@ public class SeatDTO {
 	
 	@Override
 	public boolean equals(Object obj) {
-		if (!(obj instanceof SeatDTO))
+		if (!(obj instanceof Seat))
             return false;
         if (obj == this)
             return true;
 
-        SeatDTO rhs = (SeatDTO) obj;
+        Seat rhs = (Seat) obj;
         return new EqualsBuilder().
             append(_row, rhs._row).
             append(_number, rhs._number).

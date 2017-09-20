@@ -5,71 +5,64 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
+import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
+import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlElementWrapper;
-import javax.xml.bind.annotation.XmlRootElement;
-import java.util.Map;
-
-import nz.ac.auckland.concert.common.types.PriceBand;
+import javax.persistence.MapKeyColumn;
+import javax.persistence.Table;
 
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-/**
- * DTO class to represent concerts. 
- * 
- * A ConcertDTO describes a concert in terms of:
- * _id           the unique identifier for a concert.
- * _title        the concert's title.
- * _dates        the concert's scheduled dates and times (represented as a 
- *               Set of LocalDateTime instances).
- * _tariff       concert pricing - the cost of a ticket for each price band 
- *               (A, B and C) is set individually for each concert. 
- * _performerIds identification of each performer playing at a concert 
- *               (represented as a set of performer identifiers).
- *
- */
+import nz.ac.auckland.concert.common.types.PriceBand;
 
 @Entity
+@Table(name="CONCERTS")
 public class Concert {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long _id;
 	
-	@XmlElement(name="title")
+	@Column(name = "TITLE")
 	private String _title;
 	
-	@XmlElementWrapper(name="dates")
-	@XmlElement(name="date")
+	@ElementCollection
+	@CollectionTable(name = "CONCERT_DATES",joinColumns= @JoinColumn( name = "CONCERT_ID" ) )
+	@Column( name = "DATE" )
 	private Set<LocalDateTime> _dates;
 	
-	@XmlElementWrapper(name="tariffs")
-	@XmlElement(name="tariff")
+	@ElementCollection
+	@CollectionTable(name = "CONCERT_PERFORMER",joinColumns= @JoinColumn( name = "CONCERT_ID" ) )
+	@MapKeyColumn( name = "PRICEBAND" )
+	@Column( name = "PRICE" )
 	private Map<PriceBand, BigDecimal> _tariff;
 	
-	@XmlElementWrapper(name="performerIds")
-	@XmlElement(name="performerId")
-	private Set<Long> _performerIds;
+	@ManyToMany(cascade = CascadeType.PERSIST)
+	@JoinTable(name = "CONCERT_PERFORMER",joinColumns= @JoinColumn(name = "CONCERT_ID"),inverseJoinColumns= @JoinColumn(name = "PERFORMER_ID"))
+	private Set<Performer> _performers;
 
 	public Concert() {
 	}
 
 	public Concert(Long id, String title, Set<LocalDateTime> dates,
-			Map<PriceBand, BigDecimal> ticketPrices, Set<Long> performerIds) {
+			Map<PriceBand, BigDecimal> ticketPrices, Set<Performer> performers) {
 		_id = id;
 		_title = title;
 		_dates = new HashSet<LocalDateTime>(dates);
 		_tariff = new HashMap<PriceBand, BigDecimal>(ticketPrices);
-		_performerIds = new HashSet<Long>(performerIds);
+		_performers = new HashSet<Performer>(performers);
 	}
 
 	public Long getId() {
@@ -88,8 +81,8 @@ public class Concert {
 		return _tariff.get(seatType);
 	}
 
-	public Set<Long> getPerformerIds() {
-		return Collections.unmodifiableSet(_performerIds);
+	public Set<Performer> getPerformerIds() {
+		return Collections.unmodifiableSet(_performers);
 	}
 	
 	@Override
@@ -104,7 +97,7 @@ public class Concert {
             append(_title, rhs._title).
             append(_dates, rhs._dates).
             append(_tariff, rhs._tariff).
-            append(_performerIds, rhs._performerIds).
+            append(_performers, rhs._performers).
             isEquals();
 	}
 	
@@ -114,13 +107,20 @@ public class Concert {
 	            append(_title).
 	            append(_dates).
 	            append(_tariff).
-	            append(_performerIds).
+	            append(_performers).
 	            hashCode();
 	}
-	
-	@Override
-	public String toString() {
-		return this.getClass().getName()+_id+_title;
-		
-	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
