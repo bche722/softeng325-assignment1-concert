@@ -1,49 +1,41 @@
 package nz.ac.auckland.concert.service.domain;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
-
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
-/**
- * DTO class to represent users. 
- * 
- * A UserDTO describes a user in terms of:
- * _username  the user's unique username.
- * _password  the user's password.
- * _firstname the user's first name.
- * _lastname  the user's family name.
- *
- */
-@XmlAccessorType(XmlAccessType.FIELD)
-@XmlRootElement(name="User")
-public class UserDTO {
+@Entity
+@Table(name="USERS")
+public class User {
 
-	@XmlElement(name="username")
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
 	private String _username;
 	
-	@XmlElement(name="password")
+	@Column(name = "PASSWORD")
 	private String _password;
 	
-	@XmlElement(name="firstname")
+	@Column(name = "FIRSTNAME")
 	private String _firstname;
 	
-	@XmlElement(name="lastname")
+	@Column(name = "LASTNAME")
 	private String _lastname;
 	
-	protected UserDTO() {}
+	protected User() {}
 	
-	public UserDTO(String username, String password, String lastname, String firstname) {
+	public User(String username, String password, String lastname, String firstname) {
 		_username = username;
 		_password = password;
 		_lastname = lastname;
 		_firstname = firstname;
 	}
 	
-	public UserDTO(String username, String password) {
+	public User(String username, String password) {
 		this(username, password, null, null);
 	}
 	
@@ -65,12 +57,12 @@ public class UserDTO {
 	
 	@Override
 	public boolean equals(Object obj) {
-		if (!(obj instanceof UserDTO))
+		if (!(obj instanceof User))
             return false;
         if (obj == this)
             return true;
 
-        UserDTO rhs = (UserDTO) obj;
+        User rhs = (User) obj;
         return new EqualsBuilder().
             append(_username, rhs._username).
             append(_password, rhs._password).
