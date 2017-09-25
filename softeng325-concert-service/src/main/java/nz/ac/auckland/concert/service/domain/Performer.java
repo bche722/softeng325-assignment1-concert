@@ -1,11 +1,11 @@
 package nz.ac.auckland.concert.service.domain;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -24,6 +24,7 @@ public class Performer {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "PERFORMER_ID")
 	private Long _id;
 
 	@Column(name = "NAME")
@@ -32,7 +33,7 @@ public class Performer {
 	@Column(name = "IMAGENAME")
 	private String _imageName;
 
-	@Enumerated
+	@Enumerated(EnumType.STRING)
 	@Column(name = "GENRE")
 	private Genre _genre;
 
@@ -61,8 +62,20 @@ public class Performer {
 		return _imageName;
 	}
 
-	public Set<Concert> getConcertIds() {
-		return Collections.unmodifiableSet(_concerts);
+	public Genre getGenre() {
+		return _genre;
+	}
+	
+	public Set<Concert> getConcerts(){
+		return _concerts;
+	}
+	
+	public Set<Long> getConcertIds() {
+		Set<Long> concertIds = new HashSet<Long>();
+		for(Concert c:_concerts) {
+			concertIds.add(c.getId());
+		}
+		return concertIds;
 	}
 
 	@Override

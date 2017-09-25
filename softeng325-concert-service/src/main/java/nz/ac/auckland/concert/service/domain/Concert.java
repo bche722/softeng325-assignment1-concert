@@ -11,19 +11,18 @@ import java.util.Set;
 import javax.persistence.CascadeType;
 import javax.persistence.CollectionTable;
 import javax.persistence.Column;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.ManyToMany;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.ManyToMany;
 import javax.persistence.MapKeyColumn;
+import javax.persistence.MapKeyEnumerated;
 import javax.persistence.Table;
-
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import nz.ac.auckland.concert.common.types.PriceBand;
 
@@ -33,26 +32,28 @@ public class Concert {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
+	@Column(name = "CONCERT_ID")
 	private Long _id;
 	
 	@Column(name = "TITLE")
 	private String _title;
+	
+	@ManyToMany(cascade = CascadeType.PERSIST)
+	@JoinTable(name = "CONCERT_PERFORMER",joinColumns= @JoinColumn(name = "CONCERT_ID"),inverseJoinColumns= @JoinColumn(name = "PERFORMER_ID"))
+	private Set<Performer> _performers = new HashSet<Performer>();
+
+	@ElementCollection
+	@CollectionTable(name = "CONCERT_TARIFS" )
+	@MapKeyColumn( name = "PRICEBAND")
+	@MapKeyEnumerated(EnumType.STRING)
+	@Column( name = "PRICE" )
+	private Map<PriceBand, BigDecimal> _tariff;
 	
 	@ElementCollection
 	@CollectionTable(name = "CONCERT_DATES",joinColumns= @JoinColumn( name = "CONCERT_ID" ) )
 	@Column( name = "DATE" )
 	private Set<LocalDateTime> _dates;
 	
-	@ElementCollection
-	@CollectionTable(name = "CONCERT_PERFORMER",joinColumns= @JoinColumn( name = "CONCERT_ID" ) )
-	@MapKeyColumn( name = "PRICEBAND" )
-	@Column( name = "PRICE" )
-	private Map<PriceBand, BigDecimal> _tariff;
-	
-	@ManyToMany(cascade = CascadeType.PERSIST)
-	@JoinTable(name = "CONCERT_PERFORMER",joinColumns= @JoinColumn(name = "CONCERT_ID"),inverseJoinColumns= @JoinColumn(name = "PERFORMER_ID"))
-	private Set<Performer> _performers;
-
 	public Concert() {
 	}
 
@@ -81,34 +82,16 @@ public class Concert {
 		return _tariff.get(seatType);
 	}
 
-	public Set<Performer> getPerformerIds() {
-		return Collections.unmodifiableSet(_performers);
+	public Set<Long> getPerformerIds() {
+		Set<Long> performerIds=new HashSet<Long>();
+		for (Performer p:_performers) {
+			performerIds.add(p.getId());
+		}
+		return performerIds;
 	}
 	
-	@Override
-	public boolean equals(Object obj) {
-		if (!(obj instanceof Concert))
-            return false;
-        if (obj == this)
-            return true;
-
-        Concert rhs = (Concert) obj;
-        return new EqualsBuilder().
-            append(_title, rhs._title).
-            append(_dates, rhs._dates).
-            append(_tariff, rhs._tariff).
-            append(_performers, rhs._performers).
-            isEquals();
-	}
-	
-	@Override
-	public int hashCode() {
-		return new HashCodeBuilder(17, 31). 
-	            append(_title).
-	            append(_dates).
-	            append(_tariff).
-	            append(_performers).
-	            hashCode();
+	public Map<PriceBand, BigDecimal> getTariff(){
+		return _tariff;
 	}
 }
 
