@@ -12,8 +12,10 @@ import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
@@ -29,12 +31,12 @@ public class Reservation {
 	@Column(name = "RESERVATION_ID")
 	private Long _id;
 	
-	@ManyToOne(cascade=CascadeType.PERSIST)
-	@JoinColumn(name = "CONCERT_ID",nullable = false)
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinTable(name = "RESERVATION_CONCERT",joinColumns=@JoinColumn(name = "CONCERT_ID",nullable = false))
 	private Concert _concert;
 	
-	@ManyToOne(cascade=CascadeType.PERSIST)
-	@JoinColumn(name = "USER_ID",nullable = false)
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinTable(name = "RESERVATION_USER",joinColumns=@JoinColumn(name = "USER_ID",nullable = false))
 	private User _user;
 	
 	@Column( name = "DATE" )
