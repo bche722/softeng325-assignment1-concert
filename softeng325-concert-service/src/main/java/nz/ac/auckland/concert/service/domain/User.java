@@ -5,6 +5,9 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.JoinTable;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -25,6 +28,10 @@ public class User {
 	
 	@Column(name = "LASTNAME")
 	private String _lastname;
+	
+	@OneToOne
+	@JoinTable(name = "USER_CREDITCARD",joinColumns=@JoinColumn( name = "USERNAME" ),inverseJoinColumns=@JoinColumn(name = "CARD_NUMBER") )
+	private CreditCard _creditCard;
 	
 	protected User() {}
 	
@@ -53,6 +60,14 @@ public class User {
 	
 	public String getLastname() {
 		return _lastname;
+	}
+	
+	public CreditCard getCreditCard() {
+		return _creditCard;
+	}
+	
+	public void setCreditCard(CreditCard creditCard) {
+		_creditCard=creditCard;
 	}
 	
 	@Override

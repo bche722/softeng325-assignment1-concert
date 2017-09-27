@@ -7,10 +7,12 @@ import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.Invocation.Builder;
+import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import nz.ac.auckland.concert.common.Config;
 import nz.ac.auckland.concert.common.dto.BookingDTO;
 import nz.ac.auckland.concert.common.dto.ConcertDTO;
 import nz.ac.auckland.concert.common.dto.CreditCardDTO;
@@ -24,6 +26,8 @@ public class DefaultService implements ConcertService {
 
 	private static String WEB_SERVICE_URI = "http://localhost:10000/services";
 
+	private String _token;
+	
 	@Override
 	public Set<ConcertDTO> getConcerts() throws ServiceException {
 		Client client = ClientBuilder.newClient();
@@ -67,6 +71,7 @@ public class DefaultService implements ConcertService {
 		Response response = builder.post(Entity.entity(newUser, MediaType.APPLICATION_XML));
 		if (response.getStatus() == 201) {
 			UserDTO user = response.readEntity(UserDTO.class);
+			_token=response.getCookies().get(Config.CLIENT_COOKIE).getValue();
 			response.close();
 			client.close();
 			return user;
@@ -92,6 +97,7 @@ public class DefaultService implements ConcertService {
 		Response response = builder.put(Entity.entity(user, MediaType.APPLICATION_XML));
 		if (response.getStatus() == 200) {
 			user = response.readEntity(UserDTO.class);
+			_token=response.getCookies().get(Config.CLIENT_COOKIE).getValue();
 			response.close();
 			client.close();
 			return user;
@@ -141,30 +147,31 @@ public class DefaultService implements ConcertService {
 	@Override
 	public ReservationDTO reserveSeats(ReservationRequestDTO reservationRequest) throws ServiceException {
 		Client client = ClientBuilder.newClient();
-		Builder builder = client.target(WEB_SERVICE_URI + "/reservation").request().accept(MediaType.APPLICATION_XML);
+		Builder builder = client.target(WEB_SERVICE_URI + "/reservation").request().accept(MediaType.APPLICATION_XML).cookie(new Cookie(Config.CLIENT_COOKIE, _token));
 		Response response = builder.post(Entity.entity(reservationRequest, MediaType.APPLICATION_XML));
-		if (response.getStatus() == 200) {
+		System.out.println(response.getStatus());
+		if (response.getStatus() == 201) {
 			ReservationDTO reservation = response.readEntity(ReservationDTO.class);
 			response.close();
 			client.close();
 			return reservation;
-		} else if (response.getStatus() == 400) {
-			response.close();
-			client.close();
-			throw new ServiceException(Messages.UNAUTHENTICATED_REQUEST);
 		} else if (response.getStatus() == 401) {
 			response.close();
 			client.close();
-			throw new ServiceException(Messages.BAD_AUTHENTICATON_TOKEN);
-		} else if (response.getStatus() == 402) {
-			response.close();
-			client.close();
-			throw new ServiceException(Messages.RESERVATION_REQUEST_WITH_MISSING_FIELDS);
+			throw new ServiceException(Messages.UNAUTHENTICATED_REQUEST);
 		} else if (response.getStatus() == 403) {
 			response.close();
 			client.close();
-			throw new ServiceException(Messages.CONCERT_NOT_SCHEDULED_ON_RESERVATION_DATE);
+			throw new ServiceException(Messages.BAD_AUTHENTICATON_TOKEN);
+		} else if (response.getStatus() == 400) {
+			response.close();
+			client.close();
+			throw new ServiceException(Messages.RESERVATION_REQUEST_WITH_MISSING_FIELDS);
 		} else if (response.getStatus() == 404) {
+			response.close();
+			client.close();
+			throw new ServiceException(Messages.CONCERT_NOT_SCHEDULED_ON_RESERVATION_DATE);
+		} else if (response.getStatus() == 407) {
 			response.close();
 			client.close();
 			throw new ServiceException(Messages.INSUFFICIENT_SEATS_AVAILABLE_FOR_RESERVATION);
@@ -178,24 +185,24 @@ public class DefaultService implements ConcertService {
 	@Override
 	public void confirmReservation(ReservationDTO reservation) throws ServiceException {
 		Client client = ClientBuilder.newClient();
-		Builder builder = client.target(WEB_SERVICE_URI + "/reservation").request().accept(MediaType.APPLICATION_XML);
+		Builder builder = client.target(WEB_SERVICE_URI + "/reservation").request().accept(MediaType.APPLICATION_XML).cookie(new Cookie(Config.CLIENT_COOKIE, _token));
 		Response response = builder.put(Entity.entity(reservation, MediaType.APPLICATION_XML));
-		if (response.getStatus() == 200) {
+		if (response.getStatus() == 204) {
 			response.close();
 			client.close();
-		} else if (response.getStatus() == 400) {
-			response.close();
-			client.close();
-			throw new ServiceException(Messages.UNAUTHENTICATED_REQUEST);
 		} else if (response.getStatus() == 401) {
 			response.close();
 			client.close();
+			throw new ServiceException(Messages.UNAUTHENTICATED_REQUEST);
+		} else if (response.getStatus() == 403) {
+			response.close();
+			client.close();
 			throw new ServiceException(Messages.BAD_AUTHENTICATON_TOKEN);
-		} else if (response.getStatus() == 402) {
+		} else if (response.getStatus() == 408) {
 			response.close();
 			client.close();
 			throw new ServiceException(Messages.EXPIRED_RESERVATION);
-		} else if (response.getStatus() == 403) {
+		} else if (response.getStatus() == 400) {
 			response.close();
 			client.close();
 			throw new ServiceException(Messages.CREDIT_CARD_NOT_REGISTERED);
@@ -209,20 +216,20 @@ public class DefaultService implements ConcertService {
 	@Override
 	public void registerCreditCard(CreditCardDTO creditCard) throws ServiceException {
 		Client client = ClientBuilder.newClient();
-		Builder builder = client.target(WEB_SERVICE_URI + "/creditcard").request().accept(MediaType.APPLICATION_XML);
+		Builder builder = client.target(WEB_SERVICE_URI + "/creditcard").request().accept(MediaType.APPLICATION_XML).cookie(new Cookie(Config.CLIENT_COOKIE, _token));
 		Response response = builder.post(Entity.entity(creditCard, MediaType.APPLICATION_XML));
-		if (response.getStatus() == 200) {
+		if (response.getStatus() == 204) {
 			response.close();
 			client.close();
-		} else if (response.getStatus() == 400) {
+		}else if (response.getStatus() == 401) {
 			response.close();
 			client.close();
 			throw new ServiceException(Messages.UNAUTHENTICATED_REQUEST);
-		} else if (response.getStatus() == 401) {
+		} else if (response.getStatus() == 403) {
 			response.close();
 			client.close();
 			throw new ServiceException(Messages.BAD_AUTHENTICATON_TOKEN);
-		} else {
+		}else {
 			response.close();
 			client.close();
 			throw new ServiceException(Messages.SERVICE_COMMUNICATION_ERROR);
@@ -232,7 +239,7 @@ public class DefaultService implements ConcertService {
 	@Override
 	public Set<BookingDTO> getBookings() throws ServiceException {
 		Client client = ClientBuilder.newClient();
-		Builder builder = client.target(WEB_SERVICE_URI + "/bookings").request().accept(MediaType.APPLICATION_XML);
+		Builder builder = client.target(WEB_SERVICE_URI + "/bookings").request().accept(MediaType.APPLICATION_XML).cookie(new Cookie(Config.CLIENT_COOKIE, _token));
 		Response response = builder.get();
 		if (response.getStatus() == 200) {
 			Set<BookingDTO> bookings = response.readEntity(new GenericType<Set<BookingDTO>>() {
@@ -240,15 +247,15 @@ public class DefaultService implements ConcertService {
 			response.close();
 			client.close();
 			return bookings;
-		} else if (response.getStatus() == 400) {
-			response.close();
-			client.close();
-			throw new ServiceException(Messages.UNAUTHENTICATED_REQUEST);
 		} else if (response.getStatus() == 401) {
 			response.close();
 			client.close();
+			throw new ServiceException(Messages.UNAUTHENTICATED_REQUEST);
+		} else if (response.getStatus() == 403) {
+			response.close();
+			client.close();
 			throw new ServiceException(Messages.BAD_AUTHENTICATON_TOKEN);
-		} else {
+		}else {
 			response.close();
 			client.close();
 			throw new ServiceException(Messages.SERVICE_COMMUNICATION_ERROR);
