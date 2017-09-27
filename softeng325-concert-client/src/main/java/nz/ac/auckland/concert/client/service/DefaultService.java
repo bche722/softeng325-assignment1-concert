@@ -149,7 +149,6 @@ public class DefaultService implements ConcertService {
 		Client client = ClientBuilder.newClient();
 		Builder builder = client.target(WEB_SERVICE_URI + "/reservation").request().accept(MediaType.APPLICATION_XML).cookie(new Cookie(Config.CLIENT_COOKIE, _token));
 		Response response = builder.post(Entity.entity(reservationRequest, MediaType.APPLICATION_XML));
-		System.out.println(response.getStatus());
 		if (response.getStatus() == 201) {
 			ReservationDTO reservation = response.readEntity(ReservationDTO.class);
 			response.close();

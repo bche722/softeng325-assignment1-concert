@@ -41,7 +41,7 @@ public class Reservation {
 	private LocalDateTime _date;
 	
 	@ElementCollection
-	@CollectionTable(name = "SEAT" )
+	@CollectionTable(name = "RESERVATION_SEAT" )
 	private Set<Seat> _seats;
 	
 	@Enumerated(EnumType.STRING)

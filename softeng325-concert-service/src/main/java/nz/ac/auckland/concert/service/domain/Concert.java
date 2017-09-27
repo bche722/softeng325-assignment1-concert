@@ -27,38 +27,38 @@ import javax.persistence.Table;
 import nz.ac.auckland.concert.common.types.PriceBand;
 
 @Entity
-@Table(name="CONCERTS")
+@Table(name = "CONCERTS")
 public class Concert {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	@Column(name = "CONCERT_ID")
 	private Long _id;
-	
+
 	@Column(name = "TITLE")
 	private String _title;
-	
+
 	@ManyToMany(cascade = CascadeType.PERSIST)
-	@JoinTable(name = "CONCERT_PERFORMER",joinColumns= @JoinColumn(name = "CONCERT_ID"),inverseJoinColumns= @JoinColumn(name = "PERFORMER_ID"))
+	@JoinTable(name = "CONCERT_PERFORMER", joinColumns = @JoinColumn(name = "CONCERT_ID"), inverseJoinColumns = @JoinColumn(name = "PERFORMER_ID"))
 	private Set<Performer> _performers = new HashSet<Performer>();
 
 	@ElementCollection
-	@CollectionTable(name = "CONCERT_TARIFS" )
-	@MapKeyColumn( name = "PRICEBAND")
+	@CollectionTable(name = "CONCERT_TARIFS")
+	@MapKeyColumn(name = "PRICEBAND")
 	@MapKeyEnumerated(EnumType.STRING)
-	@Column( name = "PRICE" )
+	@Column(name = "PRICE")
 	private Map<PriceBand, BigDecimal> _tariff;
-	
+
 	@ElementCollection
-	@CollectionTable(name = "CONCERT_DATES",joinColumns= @JoinColumn( name = "CONCERT_ID" ) )
-	@Column( name = "DATE" )
+	@CollectionTable(name = "CONCERT_DATES", joinColumns = @JoinColumn(name = "CONCERT_ID"))
+	@Column(name = "DATE")
 	private Set<LocalDateTime> _dates;
-	
+
 	public Concert() {
 	}
 
-	public Concert(Long id, String title, Set<LocalDateTime> dates,
-			Map<PriceBand, BigDecimal> ticketPrices, Set<Performer> performers) {
+	public Concert(Long id, String title, Set<LocalDateTime> dates, Map<PriceBand, BigDecimal> ticketPrices,
+			Set<Performer> performers) {
 		_id = id;
 		_title = title;
 		_dates = new HashSet<LocalDateTime>(dates);
@@ -83,27 +83,14 @@ public class Concert {
 	}
 
 	public Set<Long> getPerformerIds() {
-		Set<Long> performerIds=new HashSet<Long>();
-		for (Performer p:_performers) {
+		Set<Long> performerIds = new HashSet<Long>();
+		for (Performer p : _performers) {
 			performerIds.add(p.getId());
 		}
 		return performerIds;
 	}
-	
-	public Map<PriceBand, BigDecimal> getTariff(){
+
+	public Map<PriceBand, BigDecimal> getTariff() {
 		return _tariff;
 	}
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
